@@ -18,7 +18,6 @@ import javax.swing.JMenuItem;
 
 import com.google.gson.Gson;
 
-import Deprecated.U2CTabFactory;
 import U2C.ChineseTabFactory;
 import config.Config;
 import config.ConfigEntry;
@@ -36,6 +35,7 @@ import knife.DismissMenu;
 import knife.DoActiveScanMenu;
 import knife.DoPortScanMenu;
 import knife.DownloadResponseMenu;
+import knife.FindUrlAndRequest;
 import knife.HeaderEntry;
 import knife.OpenWithBrowserMenu;
 import knife.RunSQLMapMenu;
@@ -63,6 +63,8 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 	public static String Version = bsh.This.class.getPackage().getImplementationVersion();
 	public static String Author = "by bit4woo";
 	public static String github = "https://github.com/bit4woo/knife";
+	
+	public static String CurrentProxy = "";
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
@@ -163,6 +165,8 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		//menu_item_list.add(new ViewChineseMenu(this));
 		//menu_item_list.add(new JMenuItem());
 		//空的JMenuItem不会显示，所以将是否添加Item的逻辑都方法到类当中去了，以便调整菜单顺序。
+		
+		menu_item_list.add(new FindUrlAndRequest(this));
 
 		Iterator<JMenuItem> it = menu_item_list.iterator();
 		while (it.hasNext()) {
@@ -238,6 +242,10 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		}
 		cookieToSetMap.clear();
 		 */
+		if (CurrentProxy == null || CurrentProxy.equals("")) {
+			//为了知道burp当前监听的接口。供“find url and request”菜单使用
+			CurrentProxy = message.getListenerInterface();
+		}
 		
 		HelperPlus getter = new HelperPlus(helpers);
 		if (messageIsRequest) {//丢弃干扰请求
@@ -441,6 +449,29 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		} catch (Exception e) {
 			e.printStackTrace();
 			stderr.print(e.getStackTrace());
+		}
+	}
+	
+	
+	public static String getProxyHost() {
+		try {
+			String proxyHost = CurrentProxy.split(":")[0];
+			return proxyHost;
+		} catch (Exception e) {
+			e.printStackTrace();
+			CurrentProxy="";//设置为空，以便重新获取。
+			return null;
+		}
+	}
+	
+	public static int getProxyPort() {
+		try {
+			String proxyPort = CurrentProxy.split(":")[1];
+			return Integer.parseInt(proxyPort);
+		} catch (Exception e) {
+			e.printStackTrace();
+			CurrentProxy="";//设置为空，以便重新获取。
+			return -1;
 		}
 	}
 

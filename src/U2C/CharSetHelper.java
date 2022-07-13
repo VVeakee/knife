@@ -42,35 +42,9 @@ public class CharSetHelper {
 	 * @return
 	 */
 	public static String detectCharset(byte[] requestOrResponse){
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
-		boolean isRequest = true;
-		if (new String(requestOrResponse).startsWith("HTTP/")) {//response
-			isRequest = false;
-		}
-
-		String contentType = getter.getHeaderValueOf(isRequest,requestOrResponse,"Content-Type");
-
-		//1、尝试从contentTpye中获取
-		if (contentType != null){
-			if (contentType.toLowerCase().contains("charset=")) {
-				String tmpcharSet = contentType.toLowerCase().split("charset=")[1];
-				if (tmpcharSet != null && tmpcharSet.length() >0) {
-					return tmpcharSet;
-				}
-			}
-		}
-
-		//2、尝试使用ICU4J进行编码的检测
-		CharsetDetector detector = new CharsetDetector();
-		detector.setText(requestOrResponse);
-		CharsetMatch cm = detector.detect();
-		if (cm != null) {
-			return cm.getName();
-		}
-
+		
 		//3、http post的默认编码
-		return "ISO-8859-1";
+		return "GBK";
 	}
 }
 

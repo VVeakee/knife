@@ -31,38 +31,9 @@ public class HttpMessageCharSet {
 	}
 	
 	public static String getCharset(byte[] requestOrResponse){
-		IExtensionHelpers helpers = BurpExtender.getCallbacks().getHelpers();
-		Getter getter = new Getter(helpers);
-		boolean isRequest = true;
-		if (new String(requestOrResponse).startsWith("HTTP/")) {//response
-			isRequest = false;
-		}
-		String contentType = getter.getHeaderValueOf(isRequest,requestOrResponse,"Content-Type");
-		String tmpcharSet = "ISO-8859-1";//http post的默认编码
-		
-		if (contentType != null){//1、尝试从contentTpye中获取
-			if (contentType.toLowerCase().contains("charset=")) {
-				tmpcharSet = contentType.toLowerCase().split("charset=")[1];
-			}
-		}
 
-		if (tmpcharSet == null){//2、尝试使用ICU4J进行编码的检测
-			CharsetDetector detector = new CharsetDetector();
-			detector.setText(requestOrResponse);
-			CharsetMatch cm = detector.detect();
-			tmpcharSet = cm.getName();
-		}
+		String tmpcharSet = "GBK";//http post的默认编码
 
-		tmpcharSet = tmpcharSet.toLowerCase().trim();
-		//常见的编码格式有ASCII、ANSI、GBK、GB2312、UTF-8、GB18030和UNICODE等。
-		List<String> commonCharSet = Arrays.asList("ASCII,ANSI,GBK,GB2312,UTF-8,GB18030,UNICODE,utf8".toLowerCase().split(","));
-		for (String item:commonCharSet) {
-			if (tmpcharSet.contains(item)) {
-				tmpcharSet = item;
-			}
-		}
-		
-		if (tmpcharSet.equals("utf8")) tmpcharSet = "utf-8";
 		return tmpcharSet;
 	}
 }

@@ -49,7 +49,7 @@ public class ChineseTab implements IMessageEditorTab{
 	private JButton btnNewButton;
 
 	private byte[] originContent;
-	private byte[] displayContent = "Nothing to show".getBytes();
+	private byte[] handledOriginalContent = "Nothing to show".getBytes();
 
 	private List<String> allPossibleCharset;
 	private int charSetIndex = 0;
@@ -118,27 +118,27 @@ public class ChineseTab implements IMessageEditorTab{
 	@Override
 	public void setMessage(byte[] content, boolean isRequest)
 	{
-		String coding = "GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE";
+		String coding = "GBK,UTF-8,UNICODE";
 		coding = CharSetHelper.detectCharset(content)+","+coding;//检测到的编码+一些常用编码！
 		allPossibleCharset = Arrays.asList(coding.split(","));
 
 		if(content==null) {
-			txtInput.setText(displayContent);
+			txtInput.setText(handledOriginalContent);
 			return;
 		}else {
 			originContent = content;//存储原始数据
-			displayContent = preHandle(content,isRequest,getCurrentCharSet());
+			handledOriginalContent = preHandle(content,isRequest,getCurrentCharSet());
 			display();
 		}
 	}
 
 	/**
 	 * 使用特定编码显示内容,变化原始编码。
-	 * @param currentCharSet
 	 */
 	public void display() {
 		try {
-			displayContent = CharSetHelper.covertCharSet(displayContent,getCurrentCharSet(),CharSetHelper.getSystemCharSet());
+			//每一次变化都应该取最开始的内容，否则一旦出错，后续的处理都是错的
+			byte[] displayContent = CharSetHelper.covertCharSet(handledOriginalContent, getCurrentCharSet(), CharSetHelper.getSystemCharSet());
 			txtInput.setText(displayContent);
 
 			String text = String.format("Change Encoding: (Using %s)", getCurrentCharSet());
